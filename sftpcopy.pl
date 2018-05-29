@@ -5,7 +5,7 @@ use warnings;
 
 
 use File::Copy;
-use Net::SFTP;
+use Net::SFTP::Foreign; 
 use Config::Simple;
 use Data::Dumper;
 
@@ -98,9 +98,10 @@ sub copyFileAndLog
 	my $sourceDir = shift;
 	my $sourceFile = shift;
 	my $targetDir = shift;
+	my $targetFile = lc $sourceFile;
 
-	copy $sourceDir.$sourceFile, $targetDir;
-	printLogLine($sourceFile." copied to ".$targetDir);
+	copy $sourceDir.$sourceFile, $targetDir.$targetFile;
+	printLogLine($sourceFile." copied to ".$targetDir.$targetFile);
 }
 
 #download available files with correct extension to local path
@@ -128,7 +129,7 @@ sub retrieveFilesFromSftp
 	}
 	else
 	{
-		my $sftp = Net::SFTP->new($cfg->param("host"), %host_params);
+		my $sftp = Net::SFTP::Foreign->new($cfg->param("host"), %host_params);
 		
 		foreach(@filesToDownload)
 		{
@@ -153,8 +154,8 @@ sub getFilesArrayFromSftp
 	my @csv_files;
 	my %host_params = (user => $cfg->param("host_user"),
                         password => $cfg->param("host_password"));
-	my $sftp = Net::SFTP->new($cfg->param("host"), %host_params);
-	my @directory_listing = $sftp->ls($cfg->param("remote_path"));
+	my $sftp = Net::SFTP::Foreign->new($cfg->param("host"), %host_params);
+	my @directory_listing = @{$sftp->ls($cfg->param("remote_path"))};
 	my $file_ending = $cfg->param("file_ending");
 
 	my $file_hash;
